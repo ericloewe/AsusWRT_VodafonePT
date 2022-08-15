@@ -1,0 +1,29 @@
+dhcp-option=cpewan-id,vi-encap:3561,4,"<GatewayManufacturerOUI>"
+dhcp-option=cpewan-id,vi-encap:3561,5,"<SerialNumber>"
+dhcp-option=cpewan-id,vi-encap:3561,6,"<ProductClass>"
+
+# This file is read by scripts/custom/tunlr-update-providers.  It is 
+# appended with the domains from tunlr-providers, then copied to 
+# /jffs/configs/dnsmasq.conf.add to leverage the Merlin config 
+# append mechanism:
+# 
+# https://github.com/RMerl/asuswrt-merlin/wiki/Custom-config-files
+# 
+#log-queries
+
+# add local network hosts
+addn-hosts=/jffs/configs/custom/hosts.local.dnsmasq
+
+## Never forward plain names (without a dot or domain part)
+#domain-needed
+
+## Never forward addresses in the non-routed address spaces.
+bogus-priv
+
+# Send VODAFONE specific IPTV requests to the vlan DNS servers, 
+# not the default DNS servers.
+# See: http://blog.zipleen.com/2010/12/howto-setup-netgear-3500l-or-wrt54gl.html
+server=/iptvpoc.alu/discovery.iptv.microsoft.com/iptv.vodafone.pt/iptvdiscovery/87.103.119.196
+server=/iptvpoc.alu/discovery.iptv.microsoft.com/iptv.vodafone.pt/iptvdiscovery/213.30.36.212
+# Send LOCAL domain to local DNS server
+server=/lan/192.168.1.1

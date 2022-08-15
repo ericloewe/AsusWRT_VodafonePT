@@ -1,0 +1,107 @@
+#!/bin/sh
+#
+# Special thanks to zipleen for the original Tomato/DD-WRT script that this 
+# one is based on:
+#
+# https://github.com/zipleen/tomato-ddwrt-meo-iptv-scripts/blob/master/dhcpevent.sh
+# 
+# ----
+#
+# This script is run by the udhcpc program (via the wan-start script).
+#
+# The following variables are passed into it (w/example values):
+#
+# $interface: vlan12
+# $vlan_ip: 10.x.x.x
+# $subnet: 255.255.192.0
+# $vlan_gateway: 10.y.y.y
+#
+# Its purpose is to set up the routes so that requests to VODAFONE specific services
+# from the private local network are routed to the VODAFONE IPTV vlan.
+
+vlan_iface=$interface
+vlan_ip=$ip
+vlan_subnet=$subnet
+vlan_gateway=$router
+
+# duped from _net_config
+vlan_ip_file="/tmp/vlan_ip"
+
+#-----------------------------------------------------------------------------
+# These routes are set up on the original hardware, as observed in a backup 
+# file (user.ini).
+#-----------------------------------------------------------------------------
+configure_vodafone_routes () {
+  logger "$0: setting up VLAN routes"
+  # rule add chain=rt_user_labels index=1 dstip=10.48.[0-255].* log=disabled state=enabled label=ethGPON_IPTV
+  ## 10.48.0.1 -> 10.48.255.254
+  ## 10.48.0.0 / 255.255.0.0 / 8
+  ## http://www.aboutmyip.com/AboutMyXApp/SubnetCalculator.jsp?ipAddress=10.48.0.0&cidr=8
+  route add -net 10.48.0.0 netmask 255.255.0.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 10.20.100.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 10.20.110.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 10.20.120.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 10.20.122.0 netmask 255.255.254.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 10.20.124.0 netmask 255.255.252.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 10.20.150.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 10.131.17.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 87.103.116.0 netmask 255.255.252.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 87.103.119.196 netmask 255.255.255.255 gw $vlan_gateway dev $vlan_iface
+  route add -net 93.108.253.128 netmask 255.255.255.128 gw $vlan_gateway dev $vlan_iface
+  route add -net 95.136.4.0 netmask 255.255.254.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 95.136.4.112 netmask 255.255.255.248 gw $vlan_gateway dev $vlan_iface
+  route add -net 212.18.177.96 netmask 255.255.255.224 gw $vlan_gateway dev $vlan_iface
+  route add -net 213.30.36.208 netmask 255.255.255.248 gw $vlan_gateway dev $vlan_iface
+  route add -net 213.30.36.212 netmask 255.255.255.255 gw $vlan_gateway dev $vlan_iface
+  route add -net 213.30.43.16 netmask 255.255.255.255 gw $vlan_gateway dev $vlan_iface
+   
+  logger "$0: saving vlan ip $vlan_ip to $vlan_ip_file"
+  
+  # Now that we have the routes set up, we need to set up some firweall rul
+  echo $vlan_ip > $vlan_ip_file
+}
+
+#-----------------------------------------------------------------------------
+deconfig() {
+  ifconfig $vlan_iface 0.0.0.0
+}
+ 
+ #-----------------------------------------------------------------------------
+ bound() {
+ 
+   # debug environment variables
+   #env > /tmp/env
+   
+   logger "$0: bound event variables: ip: $vlan_ip, iface: $vlan_iface, router: $vlan_gateway"
+   
+   # define interface IP
+   ifconfig $vlan_iface $vlan_ip netmask $vlan_subnet
+   
+   # rp_filter must be off on vlan105!!!
+   echo 0 > /proc/sys/net/ipv4/conf/$vlan_iface/rp_filter
+   
+   configure_vodafone_routes
+   
+   logger "$0: completed"
+}
+
+#-----------------------------------------------------------------------------
+renew() {
+  # I'm lazy so I'm just goin to run all the commands again! Seems to work :P 
+  bound
+}
+    
+    case $1 in
+      deconfig)
+          deconfig
+    ;;
+      bound)
+          bound
+    ;;
+      renew)
+          renew
+    ;;
+      update)
+          renew
+    ;;
+esac            

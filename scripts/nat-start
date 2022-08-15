@@ -1,0 +1,37 @@
+#!/bin/sh
+
+#-----------------------------------------------------------------------------
+configure_vodafone_rules () {
+
+  # Sometimes nat-start is called before the VLAN dhcp server script.  In
+  # these cases, just bail.
+  [ -n "$VLAN_IP" ] || return 1
+  
+  # These are the networks whose packets we want to ROUTE OUT of our LOCAL network to the VLAN
+  # The original router doesn't seem to give access to 10.x networks in its config, so they
+  # are being excluded here.
+  local forward_vlan_networks_out="10.20.100.0/24 10.20.110.0/24 10.20.120.0/24 10.20.122.0/23 10.20.124.0/22 10.20.150.0/24 10.131.17.0/24 87.103.116.0/22 87.103.119.196/32 93.108.253.128/25 95.136.4.0/23 95.136.4.112/29 212.18.177.96/27 213.30.36.208/28 213.30.36.212/32 213.30.43.16/32"
+  local mcast_net="239.255.255.250/32"
+  
+  for vlan_net in $forward_vlan_networks_out; do
+    if has_rule $vlan_net 'nat'; then
+      logger "$0: NOT adding $LAN_NET -> $VLAN_IFACE:$vlan_net:$VLAN_IP POSTROUTING rule"
+    else
+      logger "$0: adding $LAN_NET -> $VLAN_IFACE:$vlan_net:$VLAN_IP POSTROUTING rule"
+      iptables --table nat -I POSTROUTING 1 --source $LAN_NET --destination $vlan_net --out-interface $VLAN_IFACE --jump SNAT --to-source $VLAN_IP
+    fi
+  done
+  # Prevent multicast packets from flooding the Wireless network.  ebtables requires build > 52!
+  ebtables -t nat -F  
+  #ebtables --table nat -A OUTPUT -o $LAN_IFACE -d Multicast -p 0x800 --ip-proto udp --ip-dst $mcast_net -j ACCEPT 
+  ebtables --table nat -A OUTPUT -o $WLAN_IFACE -d Multicast -j DROP 
+}
+
+#=============================================================================
+
+logger "$0 event called with args: $@"
+
+source /jffs/scripts/custom/_net_functions
+init_config
+
+configure_vodafone_rules

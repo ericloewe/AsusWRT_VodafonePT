@@ -1,0 +1,41 @@
+#!/bin/sh
+
+#---------------------------------------------------------------------------
+# Based on: 
+# https://github.com/zipleen/tomato-ddwrt-meo-iptv-scripts/blob/master/startiptv.sh
+#---------------------------------------------------------------------------
+start_igmp_proxy () {
+    logger "$0: starting igmp proxy"
+    local_command 'igmpproxy' "igmpproxy -v $CUSTOM_CONFIG_DIR/vodafone-config-igmp"
+}
+
+#---------------------------------------------------------------------------
+# Based on: 
+# https://github.com/zipleen/tomato-ddwrt-meo-iptv-scripts/blob/master/startiptv.sh
+#---------------------------------------------------------------------------
+
+configure_vlan () {
+  local script=$CUSTOM_SCRIPT_DIR/vodafone-post-dhcp-vlan-config 
+  if [ -f "$script" ]; then
+    logger "$0: kicking off vlan config"
+    local_command 'udhcpc' "udhcpc -i $VLAN_IFACE -p /var/run/udhcpc0.pid -s $script -S"
+    return $?
+  else
+    logger "$0: WARNING: script not found: $script"
+    return 1
+  fi
+}
+
+#===========================================================================
+
+logger "$0 event called with args: $@"
+
+source /jffs/scripts/custom/_net_functions
+init_config
+
+#update_dynamic_dns && update_tunlr_client
+
+# This technically doesn't depend on the WAN interface, but I'm not sure 
+# there is a better hook for it than wan-start.
+
+configure_vlan && start_igmp_proxy

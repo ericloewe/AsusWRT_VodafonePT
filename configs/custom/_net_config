@@ -1,0 +1,30 @@
+# This is the master configuration file.  I try to keep all the interesting 
+# config in here instead of spread out everywhere.  Scripts that want to use 
+# this can just source this file, or can source the _network_config script 
+# and call "init_config".
+#
+# If you are looking at _network_config.template, you should copy this file 
+# to _network_config and fill in values appropriate to your configuration.
+
+# Where the custom configs and scripts live
+CUSTOM_CONFIG_DIR="/jffs/configs/custom"
+CUSTOM_SCRIPT_DIR="/jffs/scripts/custom"
+
+#-----------------------------------------------------------------------------
+# Router's Private LAN Configuration 
+#-----------------------------------------------------------------------------
+LAN_NET="192.168.1.0/24" # default value. change this if you changed your network
+LAN_IP=$(nvram get lan_ipaddr)
+LAN_IFACE=$(nvram get wl0_ifname) # default=eth1 (wired network)
+WLAN_IFACE=$(nvram get wl1_ifname) # default=eth2 (wireless network)
+LAN_BR=$(nvram get lan_ifname) # default=br0
+
+#-----------------------------------------------------------------------------
+# VODAFONE ISP IPTV Configuration 
+#-----------------------------------------------------------------------------
+VLAN_IFACE="vlan105" # vlan for the VODAFONE IPTV
+
+# This file is written by the vodafone_post-dhcp-vlan-config script when the udhcp 
+# client has gottan an IP address from the VODAFONE vlan DHCP server.
+# It is needed at least by the nat-start script.
+VLAN_IP_FILE="/tmp/vlan_ip"
