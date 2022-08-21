@@ -6,12 +6,13 @@ vconfig add eth0 105
 
 logger "Enabling VLan 105"
 ifconfig vlan105 down
-#ifconfig vlan105 hw ether 00:00:00:00:ab:01 -> EXEMPLO
 ifconfig vlan105 up
 
-logger "Creating trunk port 4 for VLan 105"
+logger "Setting up switch chip for VLANS"
 robocfg vlan 1 ports "1 2 3 4 5t"
 robocfg vlan 105 ports "0t 5t"
+# The following is handled automatically by the GUI when we apply
+# manual IPTV configuration with VLAN 100 for internet.
+#robocfg vlan 100 ports "0t 5t"
 
-logger "Done. Secondary router should be functional."
 
