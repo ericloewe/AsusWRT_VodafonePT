@@ -11,8 +11,8 @@ dhcp-option=cpewan-id,vi-encap:3561,6,"<ProductClass>"
 # 
 #log-queries
 
-# add local network hosts
-addn-hosts=/jffs/configs/custom/hosts.local.dnsmasq
+# add local network hosts (optional)
+# addn-hosts=/jffs/configs/custom/hosts.local.dnsmasq
 
 ## Never forward plain names (without a dot or domain part)
 #domain-needed
@@ -25,5 +25,6 @@ bogus-priv
 # See: http://blog.zipleen.com/2010/12/howto-setup-netgear-3500l-or-wrt54gl.html
 server=/iptvpoc.alu/discovery.iptv.microsoft.com/iptv.vodafone.pt/iptvdiscovery/87.103.119.196
 server=/iptvpoc.alu/discovery.iptv.microsoft.com/iptv.vodafone.pt/iptvdiscovery/213.30.36.212
-# Send LOCAL domain to local DNS server
-server=/lan/192.168.1.1
+
+# Send lan domain to local DNS server
+#server=/lan/192.168.1.1

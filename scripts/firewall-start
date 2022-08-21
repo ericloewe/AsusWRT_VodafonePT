@@ -1,27 +1,28 @@
 #!/bin/sh
+# shellcheck shell=dash
 
 #-----------------------------------------------------------------------------
 configure_vodafone_rules () {
 
   # These are the networks whose packets we want to FORWARD INto our LOCAL network
-  local forward_vlan_networks_in="10.20.100.0/24 10.20.110.0/24 10.20.120.0/24 10.20.122.0/23 10.20.124.0/22 10.20.150.0/24 10.131.17.0/24 87.103.116.0/22 87.103.119.196/32 93.108.253.128/25 95.136.4.0/23 95.136.4.112/29 212.18.177.96/27 213.30.36.208/28 213.30.36.212/32 213.30.43.16/32"
+  local forward_vlan_networks_in="10.0.0.0/8 87.103.0.0/17 93.108.253.128/25 95.136.0.0/17 212.18.177.96/27 213.30.0.0/17"
 
   local mcast_ip="224.0.0.0/4"
-  local mcast_port="1025"
+  local mcast_port="1025" # This mystery port doesn't make obvious sense.
   local proto=udp
 
   iptables -I INPUT 1 -p igmp -j ACCEPT
 
   if has_rule $mcast_ip; then
-    logger "$0: NOT adding $VLAN_IFACE($proto) -> $mcast_ip:$mcast_port INPUT rule"
+    logger "$0: WILL NOT add $VLAN_IFACE($proto) -> $mcast_ip:$mcast_port INPUT rule"
   else
     logger "$0: adding $VLAN_IFACE($proto) -> $mcast_ip:$mcast_port INPUT rule"
-    iptables -I INPUT 1 -i $VLAN_IFACE -p $proto --dst $mcast_ip --dport $mcast_port: -j ACCEPT
+    iptables -I INPUT 1 -i $VLAN_IFACE -p $proto --dst $mcast_ip: -j ACCEPT
   fi
 
   for vlan_net in $forward_vlan_networks_in; do
     if has_rule $vlan_net; then
-      logger "$0: NOT adding $VLAN_IFACE:$vlan_net -> $LAN_BR FORWARD rule"
+      logger "$0: WILL NOT add $VLAN_IFACE:$vlan_net -> $LAN_BR FORWARD rule"
     else
       logger "$0: adding $VLAN_IFACE:$vlan_net -> $LAN_BR FORWARD rule"
       iptables -I FORWARD -i $VLAN_IFACE -o $LAN_BR -s $vlan_net -j ACCEPT
@@ -33,7 +34,8 @@ configure_vodafone_rules () {
 
 logger "$0 event called with args: $@"
 
-source /jffs/scripts/custom/_net_functions
+# shellcheck source=scripts/custom/_net_functions
+. /jffs/scripts/custom/_net_functions
 init_config 
 
 configure_vodafone_rules

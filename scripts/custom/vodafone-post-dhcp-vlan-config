@@ -37,27 +37,22 @@ configure_vodafone_routes () {
   ## 10.48.0.1 -> 10.48.255.254
   ## 10.48.0.0 / 255.255.0.0 / 8
   ## http://www.aboutmyip.com/AboutMyXApp/SubnetCalculator.jsp?ipAddress=10.48.0.0&cidr=8
-  route add -net 10.48.0.0 netmask 255.255.0.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 10.20.100.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 10.20.110.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 10.20.120.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 10.20.122.0 netmask 255.255.254.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 10.20.124.0 netmask 255.255.252.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 10.20.150.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 10.131.17.0 netmask 255.255.255.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 87.103.116.0 netmask 255.255.252.0 gw $vlan_gateway dev $vlan_iface
+  route add -net 10.0.0.0 netmask 255.0.0.0 gw $vlan_gateway dev $vlan_iface
+  # 87.103.119.196 is one of Vodafone's DNS servers. 
   route add -net 87.103.119.196 netmask 255.255.255.255 gw $vlan_gateway dev $vlan_iface
-  route add -net 93.108.253.128 netmask 255.255.255.128 gw $vlan_gateway dev $vlan_iface
-  route add -net 95.136.4.0 netmask 255.255.254.0 gw $vlan_gateway dev $vlan_iface
-  route add -net 95.136.4.112 netmask 255.255.255.248 gw $vlan_gateway dev $vlan_iface
-  route add -net 212.18.177.96 netmask 255.255.255.224 gw $vlan_gateway dev $vlan_iface
-  route add -net 213.30.36.208 netmask 255.255.255.248 gw $vlan_gateway dev $vlan_iface
+  # 213.30.36.212 is the alternate DNS server
   route add -net 213.30.36.212 netmask 255.255.255.255 gw $vlan_gateway dev $vlan_iface
-  route add -net 213.30.43.16 netmask 255.255.255.255 gw $vlan_gateway dev $vlan_iface
+
+  # These do not seem to apply, but they do all seemt to be controlled by Vodafone
+  #route add -net 93.108.253.128 netmask 255.255.255.128 gw $vlan_gateway dev $vlan_iface
+  #route add -net 95.136.4.0 netmask 255.255.254.0 gw $vlan_gateway dev $vlan_iface
+  #route add -net 212.18.177.96 netmask 255.255.255.224 gw $vlan_gateway dev $vlan_iface
+  #route add -net 213.30.36.208 netmask 255.255.255.248 gw $vlan_gateway dev $vlan_iface
+  #route add -net 213.30.43.16 netmask 255.255.255.255 gw $vlan_gateway dev $vlan_iface
    
   logger "$0: saving vlan ip $vlan_ip to $vlan_ip_file"
   
-  # Now that we have the routes set up, we need to set up some firweall rul
+  # Now that we have the routes set up, we need to set up some firweall rules
   echo $vlan_ip > $vlan_ip_file
 }
 

@@ -10,8 +10,8 @@ configure_vodafone_rules () {
   # These are the networks whose packets we want to ROUTE OUT of our LOCAL network to the VLAN
   # The original router doesn't seem to give access to 10.x networks in its config, so they
   # are being excluded here.
-  local forward_vlan_networks_out="10.20.100.0/24 10.20.110.0/24 10.20.120.0/24 10.20.122.0/23 10.20.124.0/22 10.20.150.0/24 10.131.17.0/24 87.103.116.0/22 87.103.119.196/32 93.108.253.128/25 95.136.4.0/23 95.136.4.112/29 212.18.177.96/27 213.30.36.208/28 213.30.36.212/32 213.30.43.16/32"
-  local mcast_net="239.255.255.250/32"
+  local forward_vlan_networks_out="10.0.0.0/8 87.103.0.0/17 93.108.253.128/25 95.136.0.0/17 212.18.177.96/27 213.30.0.0/17"
+  #local mcast_net="239.255.255.250/32"
   
   for vlan_net in $forward_vlan_networks_out; do
     if has_rule $vlan_net 'nat'; then

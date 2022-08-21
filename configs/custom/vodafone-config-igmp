@@ -1,3 +1,6 @@
+# Config file for igmpproxy
+# shellcheck disable=all
+
 # The original Thomson router excludes these: 
 #  239.255.255.254
 #  239.255.255.250
@@ -9,28 +12,21 @@
 #quickleave
 
 phyint vlan105 upstream ratelimit 0 threshold 1
-	#altnet 10.0.0.0/8
-        altnet 10.131.17.0/24
-        altnet 87.103.116.0/22
-        altnet 10.20.100.0/24
-        altnet 10.20.110.0/24
-        altnet 10.20.120.0/24
-        altnet 10.20.122.0/23
-        altnet 10.20.124.0/22
-        altnet 10.20.150.0/24
+	# Let's assume that all of 10.0.0.0/8 is fair game
+	altnet 10.0.0.0/8
+	# 87.103.0.0/17 Occasionally pops up, despite not being documented
+	altnet 87.103.0.0/17
+	# Should we include whitelist 224.0.0.0/4 here? Is it implied?
+	whitelist 224.0.0.0/4
+
+	# Old stuff, possibly releant for mediaroom
 	altnet 93.108.253.128/25
-	altnet 95.136.4.0/23
-	altnet 95.136.4.112/29
+	altnet 95.136.0.0/17
 	altnet 212.18.177.96/27
-	altnet 213.30.36.208/29
-	altnet 213.30.36.212/32
-	altnet 213.30.43.16/32
-	altnet 10.48.0.0/16
+	altnet 213.30.0.0/17
 
 phyint br0 downstream ratelimit 0 threshold 1
-	whitelist 224.0.0.0/8
-	whitelist 232.0.0.0/8
-	whitelist 239.0.0.0/8
+	whitelist 224.0.0.0/4
 
 phyint ppp0 disabled
 
