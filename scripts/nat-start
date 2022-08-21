@@ -22,9 +22,10 @@ configure_vodafone_rules () {
     fi
   done
   # Prevent multicast packets from flooding the Wireless network.  ebtables requires build > 52!
-  ebtables -t nat -F  
+  #ebtables -t nat -F  
   #ebtables --table nat -A OUTPUT -o $LAN_IFACE -d Multicast -p 0x800 --ip-proto udp --ip-dst $mcast_net -j ACCEPT 
-  ebtables --table nat -A OUTPUT -o $WLAN_IFACE -d Multicast -j DROP 
+  # Instead of dropping all multicast traffic on WLAN, we can enable IGMP snooping in the GUI
+  #ebtables --table nat -A OUTPUT -o $WLAN_IFACE -d Multicast -j DROP 
 }
 
 #=============================================================================
