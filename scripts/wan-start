@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/sh 
+# shellcheck shell=dash 
+# BusyBox uses dash
 
 #---------------------------------------------------------------------------
 # Based on: 
@@ -28,9 +30,10 @@ configure_vlan () {
 
 #===========================================================================
 
-logger "$0 event called with args: $@"
+logger "$0 event called with args: $*"
 
-source /jffs/scripts/custom/_net_functions
+# shellcheck source=scripts/custom/_net_functions
+. /jffs/scripts/custom/_net_functions 
 init_config
 
 #update_dynamic_dns && update_tunlr_client

@@ -1,3 +1,5 @@
+#!/bin/sh
+# shellcheck shell=dash
 
 #-----------------------------------------------------------------------------------------
 init_config () {
@@ -8,11 +10,12 @@ init_config () {
     echo "Missing net config file: $config_file"
     exit 1
   else
-    source $config_file
+    # shellcheck source=configs/custom/_net_config
+    . $config_file
   fi
 
   # This only exists after the meo-post-dhcp-vlan-config has gotten an IP
-  [ -f "$VLAN_IP_FILE" ] && VLAN_IP=`cat $VLAN_IP_FILE`
+  [ -f "$VLAN_IP_FILE" ] && VLAN_IP=$(cat "$VLAN_IP_FILE")
 }
 
 #-----------------------------------------------------------------------------------------
@@ -22,7 +25,8 @@ local_command () {
   local description=$1
   shift
   logger "$description: running command: $@"
-  local output=`$@`
+  local output
+  output=$($@)
 
 local old_ifs=$IFS
 local ifs2="
@@ -50,7 +54,7 @@ knock_server () {
   local server=$1
   local port_seq=$2
   for port in $port_seq; do
-    local_command 'knock' knock $server $port
+    local_command 'knock' knock "$server" "$port"
     res=$?
     if [ "$res" != "0" ]; then
        return $res
@@ -62,7 +66,7 @@ knock_server () {
 
 #-----------------------------------------------------------------------------------------
 tunlr_server_command () {
-  knock_server $TUNLR_SERVER_HOST "$TUNLR_SERVER_KNOCK_SEQ" && \
+  knock_server "$TUNLR_SERVER_HOST" "$TUNLR_SERVER_KNOCK_SEQ" && \
     local_command 'tunlr_server' "ssh -y -i $TUNLR_SERVER_KEY_FILE -l $TUNLR_SERVER_LOGIN $TUNLR_SERVER_HOST sudo $@"
   return $?
 }
@@ -77,7 +81,7 @@ has_rule () {
     table_arg="--table $table_name"
   fi
 
-  if [ `iptables -L $table_arg -n | grep $rule_net | wc -l` -eq 0  ]; then
+  if [ $(iptables -L "$table_arg" -n | grep -c "$rule_net") -eq 0  ]; then
     return 1 # doesn't have rule, return false
   else
     return 0 # has rule, return true
