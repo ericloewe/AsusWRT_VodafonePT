@@ -47,7 +47,7 @@ read masked << EOF
 $(( $i1 & $m1 )).$(( $i2 & $m2 )).$(( $i3 & $m3 )).$(( $i4 & $m4 ))
 EOF
 
-bits=$(echo $long_mask | awk -F. -f cidr.awk)
+bits=$(echo $long_mask | awk -F. -f $CUSTOM_CONFIG_DIR/cidr.awk)
 
 LAN_NET="${masked}${bits}"
 
