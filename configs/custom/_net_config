@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # This is the master configuration file.  I try to keep all the interesting 
 # config in here instead of spread out everywhere.  Scripts that want to use 
 # this can just source this file, or can source the _network_config script 
@@ -11,15 +13,6 @@ CUSTOM_CONFIG_DIR="/jffs/configs/custom"
 CUSTOM_SCRIPT_DIR="/jffs/scripts/custom"
 
 #-----------------------------------------------------------------------------
-# Router's Private LAN Configuration 
-#-----------------------------------------------------------------------------
-LAN_NET="192.168.1.0/24" # default value. change this if you changed your network
-LAN_IP=$(nvram get lan_ipaddr)
-LAN_IFACE=$(nvram get wl0_ifname) # default=eth1 (wired network)
-WLAN_IFACE=$(nvram get wl1_ifname) # default=eth2 (wireless network)
-LAN_BR=$(nvram get lan_ifname) # default=br0
-
-#-----------------------------------------------------------------------------
 # VODAFONE ISP IPTV Configuration 
 #-----------------------------------------------------------------------------
 VLAN_IFACE="vlan105" # vlan for the VODAFONE IPTV
@@ -28,3 +21,34 @@ VLAN_IFACE="vlan105" # vlan for the VODAFONE IPTV
 # client has gottan an IP address from the VODAFONE vlan DHCP server.
 # It is needed at least by the nat-start script.
 VLAN_IP_FILE="/tmp/vlan_ip"
+
+
+
+#-----------------------------------------------------------------------------
+# Router's Private LAN Configuration 
+#-----------------------------------------------------------------------------
+LAN_IFACE=$(nvram get wl0_ifname) # default=eth1 (wired network)
+WLAN_IFACE=$(nvram get wl1_ifname) # default=eth2 (wireless network)
+LAN_BR=$(nvram get lan_ifname) # default=br0
+LAN_IP=$(nvram get lan_ipaddr)
+# Get network and netmask
+long_mask=$(nvram get lan_netmask)
+# Read the address octets separately
+IFS=. read -r i1 i2 i3 i4 << EOF
+$LAN_IP
+EOF
+# Read the netmask octets separately
+IFS=. read -r m1 m2 m3 m4 << EOF
+$long_mask
+EOF
+# Bitwise or each addr/mask pair of octets to get the network address octets. 
+# Print them out in the standard format.
+read masked << EOF
+$(( $i1 & $m1 )).$(( $i2 & $m2 )).$(( $i3 & $m3 )).$(( $i4 & $m4 ))
+EOF
+
+bits=$(echo $long_mask | awk -F. -f cidr.awk)
+
+LAN_NET="${masked}${bits}"
+
+
